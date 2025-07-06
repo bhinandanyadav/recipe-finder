@@ -1,24 +1,45 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../providers/recipe_provider.dart';
 import '../widgets/recipe_card.dart';
 import '../models/recipe.dart';
 
 class SavedRecipesScreen extends StatefulWidget {
-  const SavedRecipesScreen({Key? key}) : super(key: key);
+  const SavedRecipesScreen({super.key});
 
   @override
   State<SavedRecipesScreen> createState() => _SavedRecipesScreenState();
 }
 
-class _SavedRecipesScreenState extends State<SavedRecipesScreen> {
+class _SavedRecipesScreenState extends State<SavedRecipesScreen>
+    with TickerProviderStateMixin {
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
+
   @override
   void initState() {
     super.initState();
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 600),
+      vsync: this,
+    );
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
+
     // Load saved recipes when the screen is initialized
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<RecipeProvider>().loadSavedRecipes();
+      _animationController.forward();
     });
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
   }
 
   void _removeRecipe(Recipe recipe) {
@@ -28,142 +49,304 @@ class _SavedRecipesScreenState extends State<SavedRecipesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Saved Recipes'),
-        backgroundColor: Colors.orange,
-        foregroundColor: Colors.white,
-        elevation: 0,
-      ),
-      body: Consumer<RecipeProvider>(
-        builder: (context, provider, child) {
-          if (provider.savedRecipes.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.bookmark_border,
-                    size: 64,
-                    color: Colors.grey[400],
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'No saved recipes',
-                    style: TextStyle(
-                      color: Colors.grey[600],
-                      fontSize: 18,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Save recipes from search results to see them here',
-                    style: TextStyle(
-                      color: Colors.grey[500],
-                      fontSize: 14,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
-            );
-          }
-
-          return Column(
-            children: [
-              // Calorie Counter Section
-              Container(
-                margin: const EdgeInsets.all(16),
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.orange.shade50,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.orange.shade200),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.analytics,
-                          color: Colors.orange.shade700,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Nutrition Summary',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.orange.shade700,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        _buildNutritionCard(
-                          'Total Calories',
-                          '${provider.getTotalCalories(provider.savedRecipes).toInt()}',
-                          Icons.local_fire_department,
-                          Colors.red,
-                        ),
-                        _buildNutritionCard(
-                          'Total Servings',
-                          '${provider.getTotalServings(provider.savedRecipes)}',
-                          Icons.people,
-                          Colors.blue,
-                        ),
-                        _buildNutritionCard(
-                          'Avg Cal/Serving',
-                          '${provider.getAverageCaloriesPerServing(provider.savedRecipes).toInt()}',
-                          Icons.restaurant,
-                          Colors.green,
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              
-              // Recipe Count
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Row(
-                  children: [
-                    Text(
-                      '${provider.savedRecipes.length} saved recipe${provider.savedRecipes.length == 1 ? '' : 's'}',
+      body: CustomScrollView(
+        slivers: [
+          // Custom App Bar
+          SliverAppBar(
+            expandedHeight: 120,
+            floating: false,
+            pinned: true,
+            backgroundColor: Colors.orange.shade600,
+            flexibleSpace: FlexibleSpaceBar(
+              title: AnimatedBuilder(
+                animation: _fadeAnimation,
+                builder: (context, child) {
+                  return Opacity(
+                    opacity: _fadeAnimation.value,
+                    child: const Text(
+                      'Saved Recipes',
                       style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.grey[700],
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 24,
+                      ),
+                    ),
+                  );
+                },
+              ),
+              background: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Colors.orange.shade400,
+                      Colors.orange.shade600,
+                      Colors.orange.shade800,
+                    ],
+                  ),
+                ),
+                child: Stack(
+                  children: [
+                    Positioned(
+                      top: -30,
+                      right: -30,
+                      child: Container(
+                        width: 100,
+                        height: 100,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.1),
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ),
+                    Center(
+                      child: Icon(
+                        FontAwesomeIcons.bookmark,
+                        size: 40,
+                        color: Colors.white.withOpacity(0.3),
                       ),
                     ),
                   ],
                 ),
               ),
-              
-              const SizedBox(height: 8),
-              
-              // Saved Recipes List
-              Expanded(
-                child: ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  itemCount: provider.savedRecipes.length,
-                  itemBuilder: (context, index) {
-                    final recipe = provider.savedRecipes[index];
-                    return RecipeCard(
-                      recipe: recipe,
-                      onSaveToggle: () => _removeRecipe(recipe),
+            ),
+          ),
+
+          // Content
+          Consumer<RecipeProvider>(
+            builder: (context, provider, child) {
+              if (provider.savedRecipes.isEmpty) {
+                return SliverFillRemaining(
+                  child: AnimatedBuilder(
+                    animation: _fadeAnimation,
+                    builder: (context, child) {
+                      return Opacity(
+                        opacity: _fadeAnimation.value,
+                        child: Container(
+                          margin: const EdgeInsets.all(32),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(24),
+                                decoration: BoxDecoration(
+                                  color: Colors.orange.shade50,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(
+                                  FontAwesomeIcons.bookmark,
+                                  size: 64,
+                                  color: Colors.orange.shade300,
+                                ),
+                              ),
+                              const SizedBox(height: 24),
+                              const Text(
+                                'No saved recipes yet',
+                                style: TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black87,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 12),
+                              Text(
+                                'Save recipes from search results to see them here',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.grey.shade600,
+                                  height: 1.4,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 32),
+                              ElevatedButton.icon(
+                                onPressed: () {
+                                  // Navigate to home screen
+                                  DefaultTabController.of(
+                                    context,
+                                  )?.animateTo(0);
+                                },
+                                icon: const Icon(
+                                  FontAwesomeIcons.magnifyingGlass,
+                                ),
+                                label: const Text('Find Recipes'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.orange.shade600,
+                                  foregroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(15),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 24,
+                                    vertical: 12,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                );
+              }
+
+              return SliverList(
+                delegate: SliverChildListDelegate([
+                  // Nutrition Summary Section
+                  AnimatedBuilder(
+                    animation: _fadeAnimation,
+                    builder: (context, child) {
+                      return Opacity(
+                        opacity: _fadeAnimation.value,
+                        child: Container(
+                          margin: const EdgeInsets.all(16),
+                          padding: const EdgeInsets.all(24),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                Colors.orange.shade50,
+                                Colors.orange.shade100,
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.orange.withOpacity(0.1),
+                                blurRadius: 10,
+                                offset: const Offset(0, 5),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: Colors.orange.shade100,
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: Icon(
+                                      FontAwesomeIcons.chartLine,
+                                      color: Colors.orange.shade700,
+                                      size: 20,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  const Text(
+                                    'Nutrition Summary',
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 20),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceAround,
+                                children: [
+                                  _buildNutritionCard(
+                                    'Total Calories',
+                                    '${provider.getTotalCalories(provider.savedRecipes).toInt()}',
+                                    FontAwesomeIcons.fire,
+                                    Colors.red.shade600,
+                                  ),
+                                  _buildNutritionCard(
+                                    'Total Servings',
+                                    '${provider.getTotalServings(provider.savedRecipes)}',
+                                    FontAwesomeIcons.users,
+                                    Colors.blue.shade600,
+                                  ),
+                                  _buildNutritionCard(
+                                    'Avg Cal/Serving',
+                                    '${provider.getAverageCaloriesPerServing(provider.savedRecipes).toInt()}',
+                                    FontAwesomeIcons.utensils,
+                                    Colors.green.shade600,
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+
+                  // Recipe Count Header
+                  AnimatedBuilder(
+                    animation: _fadeAnimation,
+                    builder: (context, child) {
+                      return Opacity(
+                        opacity: _fadeAnimation.value,
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 16),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: Colors.orange.shade100,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Icon(
+                                  FontAwesomeIcons.bookmark,
+                                  color: Colors.orange.shade700,
+                                  size: 16,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Text(
+                                '${provider.savedRecipes.length} saved recipe${provider.savedRecipes.length == 1 ? '' : 's'}',
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+
+                  // Saved Recipes List
+                  ...provider.savedRecipes.asMap().entries.map((entry) {
+                    final index = entry.key;
+                    final recipe = entry.value;
+                    return AnimationConfiguration.staggeredList(
+                      position: index,
+                      duration: const Duration(milliseconds: 600),
+                      child: SlideAnimation(
+                        verticalOffset: 50.0,
+                        child: FadeInAnimation(
+                          child: RecipeCard(
+                            recipe: recipe,
+                            onSaveToggle: () => _removeRecipe(recipe),
+                            index: index,
+                          ),
+                        ),
+                      ),
                     );
-                  },
-                ),
-              ),
-            ],
-          );
-        },
+                  }).toList(),
+
+                  const SizedBox(height: 20),
+                ]),
+              );
+            },
+          ),
+        ],
       ),
     );
   }
@@ -176,24 +359,29 @@ class _SavedRecipesScreenState extends State<SavedRecipesScreen> {
   ) {
     return Column(
       children: [
-        Icon(
-          icon,
-          size: 24,
-          color: color,
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(15),
+          ),
+          child: Icon(icon, size: 24, color: color),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 8),
         Text(
           value,
-          style: const TextStyle(
-            fontSize: 16,
+          style: TextStyle(
+            fontSize: 18,
             fontWeight: FontWeight.bold,
+            color: color,
           ),
         ),
         Text(
           title,
-          style: const TextStyle(
-            fontSize: 10,
-            color: Colors.grey,
+          style: TextStyle(
+            fontSize: 12,
+            color: Colors.grey.shade600,
+            fontWeight: FontWeight.w500,
           ),
           textAlign: TextAlign.center,
         ),

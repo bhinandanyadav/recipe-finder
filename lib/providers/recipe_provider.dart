@@ -11,25 +11,53 @@ class RecipeProvider extends ChangeNotifier {
   List<Recipe> _savedRecipes = [];
   bool _isLoading = false;
   String _error = '';
+  String _lastSearchQuery = '';
 
   List<Recipe> get recipes => _recipes;
   List<Recipe> get savedRecipes => _savedRecipes;
   bool get isLoading => _isLoading;
   String get error => _error;
+  String get lastSearchQuery => _lastSearchQuery;
 
   Future<void> searchRecipes(List<String> ingredients) async {
     _isLoading = true;
     _error = '';
+    _lastSearchQuery = ingredients.join(', ');
     notifyListeners();
 
     try {
       _recipes = await _recipeService.searchRecipesByIngredients(ingredients);
-      
+
       // Check which recipes are already saved
       for (Recipe recipe in _recipes) {
         recipe.isSaved = await _storageService.isRecipeSaved(recipe.id);
       }
-      
+
+      _isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      _error = 'Failed to search recipes: $e';
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> searchRecipesByQuery(String query) async {
+    if (query.trim().isEmpty) return;
+
+    _isLoading = true;
+    _error = '';
+    _lastSearchQuery = query;
+    notifyListeners();
+
+    try {
+      _recipes = await _recipeService.searchRecipesByQuery(query);
+
+      // Check which recipes are already saved
+      for (Recipe recipe in _recipes) {
+        recipe.isSaved = await _storageService.isRecipeSaved(recipe.id);
+      }
+
       _isLoading = false;
       notifyListeners();
     } catch (e) {
@@ -43,10 +71,10 @@ class RecipeProvider extends ChangeNotifier {
     try {
       await _storageService.saveRecipe(recipe);
       recipe.isSaved = true;
-      
+
       // Update saved recipes list
       await loadSavedRecipes();
-      
+
       notifyListeners();
     } catch (e) {
       _error = 'Failed to save recipe: $e';
@@ -57,16 +85,18 @@ class RecipeProvider extends ChangeNotifier {
   Future<void> removeRecipe(String recipeId) async {
     try {
       await _storageService.removeRecipe(recipeId);
-      
+
       // Update the recipe in the main list
-      final recipeIndex = _recipes.indexWhere((recipe) => recipe.id == recipeId);
+      final recipeIndex = _recipes.indexWhere(
+        (recipe) => recipe.id == recipeId,
+      );
       if (recipeIndex != -1) {
         _recipes[recipeIndex].isSaved = false;
       }
-      
+
       // Update saved recipes list
       await loadSavedRecipes();
-      
+
       notifyListeners();
     } catch (e) {
       _error = 'Failed to remove recipe: $e';
@@ -89,6 +119,12 @@ class RecipeProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void clearRecipes() {
+    _recipes = [];
+    _lastSearchQuery = '';
+    notifyListeners();
+  }
+
   double getTotalCalories(List<Recipe> recipes) {
     return recipes.fold(0.0, (total, recipe) => total + recipe.calories);
   }
@@ -102,5 +138,18 @@ class RecipeProvider extends ChangeNotifier {
     final totalCalories = getTotalCalories(recipes);
     final totalServings = getTotalServings(recipes);
     return totalServings > 0 ? totalCalories / totalServings : 0.0;
+  }
+
+  List<Recipe> getFilteredRecipes({
+    int? maxTime,
+    double? maxCalories,
+    int? minServings,
+  }) {
+    return _recipes.where((recipe) {
+      if (maxTime != null && recipe.readyInMinutes > maxTime) return false;
+      if (maxCalories != null && recipe.calories > maxCalories) return false;
+      if (minServings != null && recipe.servings < minServings) return false;
+      return true;
+    }).toList();
   }
 }
