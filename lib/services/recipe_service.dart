@@ -20,8 +20,6 @@ class RecipeService {
           'app_id': appId,
           'app_key': appKey,
           'random': 'true',
-          'field':
-              'label,image,ingredientLines,totalTime,yield,calories,url,digest',
         },
       );
 
@@ -65,8 +63,6 @@ class RecipeService {
           'app_id': appId,
           'app_key': appKey,
           'random': 'true',
-          'field':
-              'label,image,ingredientLines,totalTime,yield,calories,url,digest',
         },
       );
 

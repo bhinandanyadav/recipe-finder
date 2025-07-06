@@ -163,10 +163,8 @@ class _SavedRecipesScreenState extends State<SavedRecipesScreen>
                               const SizedBox(height: 32),
                               ElevatedButton.icon(
                                 onPressed: () {
-                                  // Navigate to home screen
-                                  DefaultTabController.of(
-                                    context,
-                                  )?.animateTo(0);
+                                  // Navigate back to home screen
+                                  Navigator.of(context).pop();
                                 },
                                 icon: const Icon(
                                   FontAwesomeIcons.magnifyingGlass,
