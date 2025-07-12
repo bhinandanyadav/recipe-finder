@@ -21,6 +21,16 @@
 - **🥗 Soups & Salads**: Hearty Minestrone Soup, Greek Quinoa Salad
 - **🥞 Breakfast & Desserts**: Buttermilk Pancakes, Chocolate Chip Cookies
 
+## 📸 Screenshots
+
+<div align="center">
+  <img src="assets/images/homepage.png" alt="Home Screen" width="300"/>
+  <img src="assets/images/ingrediantsearch.png" alt="Ingredient Search" width="300"/>
+  <img src="assets/images/saved recipe.png" alt="Saved Recipes" width="300"/>
+</div>
+
+*From left to right: Home screen with recipe search, ingredient-based search results, and saved recipes collection*
+
 ## 🚀 Quick Start
 
 ### Prerequisites

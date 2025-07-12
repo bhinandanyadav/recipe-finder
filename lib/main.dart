@@ -81,6 +81,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
     with TickerProviderStateMixin {
   int _currentIndex = 0;
   late AnimationController _animationController;
+  // ignore: unused_field
   late Animation<double> _fadeAnimation;
 
   final List<Widget> _screens = [
