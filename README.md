@@ -23,11 +23,15 @@
 
 ## 📸 Screenshots
 
-<div align="center">
+### Home Page
   <img src="assets/images/homepage.png" alt="Home Screen" width="300"/>
+
+### Searching Ingrediant
   <img src="assets/images/ingrediantsearch.png" alt="Ingredient Search" width="300"/>
+
+### Saved Recipe  
   <img src="assets/images/saved recipe.png" alt="Saved Recipes" width="300"/>
-</div>
+
 
 *From left to right: Home screen with recipe search, ingredient-based search results, and saved recipes collection*
 
