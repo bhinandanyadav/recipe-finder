@@ -1,3 +1,38 @@
+/*
+ * 📱 SAVED RECIPES SCREEN - USER'S FAVORITE RECIPES
+ * 
+ * Purpose: Displays and manages user's saved/favorite recipes
+ * Location: lib/screens/saved_recipes_screen.dart
+ * 
+ * What this file does:
+ * - Shows all recipes that user has saved to favorites
+ * - Displays nutrition statistics for saved recipes
+ * - Allows users to remove recipes from favorites
+ * - Provides empty state when no recipes are saved
+ * - Calculates and shows total calories, servings, and averages
+ * - Handles loading states and error messages
+ * 
+ * Why it's needed:
+ * - Gives users access to their personal recipe collection
+ * - Provides offline access to favorite recipes
+ * - Shows nutrition tracking for meal planning
+ * - Implements favorites management functionality
+ * - Enhances user experience with personalized content
+ * 
+ * Used by:
+ * - main.dart (as second tab in bottom navigation)
+ * - Accessed when user taps "Saved" tab
+ * 
+ * Key Features:
+ * - Beautiful grid layout for saved recipes
+ * - Nutrition statistics card with calorie tracking
+ * - Remove from favorites functionality
+ * - Empty state with encouraging message
+ * - Animated transitions and loading states
+ * - Responsive design for different screen sizes
+ * - Pull-to-refresh to update saved recipes
+ */
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
@@ -15,12 +50,14 @@ class SavedRecipesScreen extends StatefulWidget {
 
 class _SavedRecipesScreenState extends State<SavedRecipesScreen>
     with TickerProviderStateMixin {
+  // Animation controllers for smooth screen transitions
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
 
   @override
   void initState() {
     super.initState();
+    // Initialize fade animation for smooth screen appearance
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 600),
       vsync: this,
@@ -31,17 +68,18 @@ class _SavedRecipesScreenState extends State<SavedRecipesScreen>
 
     // Load saved recipes when the screen is initialized
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<RecipeProvider>().loadSavedRecipes();
-      _animationController.forward();
+      context.read<RecipeProvider>().loadSavedRecipes(); // Load from storage
+      _animationController.forward(); // Start animation
     });
   }
 
   @override
   void dispose() {
-    _animationController.dispose();
+    _animationController.dispose(); // Clean up animation controller
     super.dispose();
   }
 
+  // Remove a recipe from user's favorites
   void _removeRecipe(Recipe recipe) {
     context.read<RecipeProvider>().removeRecipe(recipe.id);
   }

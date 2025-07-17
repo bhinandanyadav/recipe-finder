@@ -1,25 +1,57 @@
+/*
+ * 🛠️ RECIPE SERVICE - API INTEGRATION
+ * 
+ * Purpose: Handles all recipe data fetching from external APIs and mock data
+ * Location: lib/services/recipe_service.dart
+ * 
+ * What this file does:
+ * - Connects to Edamam Recipe API to fetch real recipe data
+ * - Provides fallback mock data when API fails or is unavailable
+ * - Converts API response format to our app's Recipe model
+ * - Handles API errors gracefully with fallback options
+ * - Supports searching by ingredients or text queries
+ * 
+ * Why it's needed:
+ * - Separates API logic from UI components (clean architecture)
+ * - Provides single source of truth for recipe data
+ * - Handles network errors and API failures
+ * - Makes it easy to switch between real API and mock data
+ * - Centralizes all recipe data fetching logic
+ * 
+ * Used by:
+ * - recipe_provider.dart (for state management)
+ * - Indirectly used by all screens that display recipes
+ * 
+ * API Used:
+ * - Edamam Recipe API (https://developer.edamam.com/edamam-recipe-api)
+ * - Provides comprehensive recipe data including nutrition info
+ */
+
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/recipe.dart';
 
 class RecipeService {
-  // Edamam API credentials
+  // Edamam API credentials - used to authenticate with the recipe API
   static const String appId = 'ab929034';
   static const String appKey = 'd5ff3d86a316402119824784a78b5092';
   static const String baseUrl = 'https://api.edamam.com/api/recipes/v2';
 
+  // Search recipes by ingredients (e.g., ["chicken", "tomato"])
   Future<List<Recipe>> searchRecipesByIngredients(
     List<String> ingredients,
   ) async {
     try {
-      final String ingredientsString = ingredients.join(',');
+      final String ingredientsString = ingredients.join(
+        ',',
+      ); // Convert list to comma-separated string
       final Uri uri = Uri.parse(baseUrl).replace(
         queryParameters: {
-          'type': 'public',
-          'q': ingredientsString,
-          'app_id': appId,
-          'app_key': appKey,
-          'random': 'true',
+          'type': 'public', // Use public recipes
+          'q': ingredientsString, // Search query
+          'app_id': appId, // API ID
+          'app_key': appKey, // API key
+          'random': 'true', // Get random results
         },
       );
 
@@ -36,7 +68,9 @@ class RecipeService {
         for (var hit in hits) {
           final recipeData = hit['recipe'];
           if (recipeData != null) {
-            final recipe = _parseRecipeFromEdamam(recipeData);
+            final recipe = _parseRecipeFromEdamam(
+              recipeData,
+            ); // Convert API format to our format
             if (recipe != null) {
               recipes.add(recipe);
             }
@@ -46,23 +80,24 @@ class RecipeService {
         return recipes;
       } else {
         print('API Error: ${response.statusCode} - ${response.body}');
-        return _getMockRecipes(ingredients);
+        return _getMockRecipes(ingredients); // Use mock data if API fails
       }
     } catch (e) {
       print('Error fetching recipes: $e');
-      return _getMockRecipes(ingredients);
+      return _getMockRecipes(ingredients); // Use mock data if network fails
     }
   }
 
+  // Search recipes by text query (e.g., "chicken pasta")
   Future<List<Recipe>> searchRecipesByQuery(String query) async {
     try {
       final Uri uri = Uri.parse(baseUrl).replace(
         queryParameters: {
-          'type': 'public',
-          'q': query,
-          'app_id': appId,
-          'app_key': appKey,
-          'random': 'true',
+          'type': 'public', // Use public recipes
+          'q': query, // Search query
+          'app_id': appId, // API ID
+          'app_key': appKey, // API key
+          'random': 'true', // Get random results
         },
       );
 
@@ -114,8 +149,12 @@ class RecipeService {
       final String title = recipeData['label'] ?? '';
       final String image = recipeData['image'] ?? '';
       final List<dynamic> ingredientLines = recipeData['ingredientLines'] ?? [];
-      final int totalTime = recipeData['totalTime'] ?? 0;
-      final int yield = recipeData['yield'] ?? 1;
+      final int totalTime = (recipeData['totalTime'] is num) 
+          ? (recipeData['totalTime'] as num).toInt() 
+          : 0; // Safe conversion to int
+      final int yield = (recipeData['yield'] is num) 
+          ? (recipeData['yield'] as num).toInt() 
+          : 1; // Safe conversion to int
 
       // Calculate calories from digest information
       double calories = 0.0;

@@ -1,3 +1,40 @@
+/*
+ * 📱 RECIPE DETAIL SCREEN - DETAILED RECIPE VIEW
+ * 
+ * Purpose: Shows complete recipe information with cooking instructions
+ * Location: lib/screens/recipe_detail_screen.dart
+ * 
+ * What this file does:
+ * - Displays full recipe details (image, title, ingredients, instructions)
+ * - Shows nutrition information (calories, servings, cooking time)
+ * - Provides save/unsave functionality with animated button
+ * - Includes beautiful hero image with parallax effect
+ * - Formats ingredients and instructions in readable lists
+ * - Handles loading states for images and data
+ * 
+ * Why it's needed:
+ * - Provides complete recipe information for cooking
+ * - Implements detailed view navigation pattern
+ * - Shows all recipe data in organized, readable format
+ * - Allows users to save recipes while viewing details
+ * - Enhances user experience with rich content display
+ * 
+ * Used by:
+ * - Accessed when user taps on any recipe card
+ * - Navigation from home_screen.dart and saved_recipes_screen.dart
+ * - Can be accessed from any screen showing recipe cards
+ * 
+ * Key Features:
+ * - Full-screen hero image with loading states
+ * - Animated floating action button for save/unsave
+ * - Step-by-step cooking instructions
+ * - Ingredient list with measurements
+ * - Nutrition facts display
+ * - Responsive design for different screen sizes
+ * - Smooth animations and transitions
+ * - Back navigation with app bar
+ */
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -7,7 +44,7 @@ import '../models/recipe.dart';
 import '../providers/recipe_provider.dart';
 
 class RecipeDetailScreen extends StatefulWidget {
-  final Recipe recipe;
+  final Recipe recipe; // Recipe to display in detail
 
   const RecipeDetailScreen({super.key, required this.recipe});
 
@@ -17,15 +54,17 @@ class RecipeDetailScreen extends StatefulWidget {
 
 class _RecipeDetailScreenState extends State<RecipeDetailScreen>
     with TickerProviderStateMixin {
+  // Animation controllers for smooth screen transitions
   late AnimationController _animationController;
-  late Animation<double> _fadeAnimation;
-  late Animation<Offset> _slideAnimation;
+  late Animation<double> _fadeAnimation; // Fade in animation
+  late Animation<Offset> _slideAnimation; // Slide up animation
 
   @override
   void initState() {
     super.initState();
+    // Initialize animations for smooth screen appearance
     _animationController = AnimationController(
-      duration: const Duration(milliseconds: 800),
+      duration: const Duration(milliseconds: 0),
       vsync: this,
     );
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
@@ -36,12 +75,12 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen>
           CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
         );
 
-    _animationController.forward();
+    _animationController.forward(); // Start animations
   }
 
   @override
   void dispose() {
-    _animationController.dispose();
+    _animationController.dispose(); // Clean up animation controller
     super.dispose();
   }
 
@@ -59,6 +98,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen>
               icon: Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
+                  // ignore: deprecated_member_use
                   color: Colors.white.withOpacity(0.9),
                   borderRadius: BorderRadius.circular(20),
                 ),
@@ -91,7 +131,9 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen>
                         end: Alignment.bottomCenter,
                         colors: [
                           Colors.transparent,
+                          // ignore: deprecated_member_use
                           Colors.black.withOpacity(0.4),
+                          // ignore: deprecated_member_use
                           Colors.black.withOpacity(0.7),
                         ],
                       ),

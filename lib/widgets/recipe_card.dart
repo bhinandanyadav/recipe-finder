@@ -1,3 +1,38 @@
+/*
+ * 🧩 RECIPE CARD WIDGET - REUSABLE UI COMPONENT
+ * 
+ * Purpose: Displays recipe information in a beautiful, interactive card format
+ * Location: lib/widgets/recipe_card.dart
+ * 
+ * What this file does:
+ * - Creates visually appealing cards for recipe display
+ * - Handles user interactions (tap to view details, save/unsave)
+ * - Provides smooth animations and visual feedback
+ * - Supports both search results and saved recipes display
+ * - Includes image loading with shimmer effect
+ * - Shows recipe metadata (time, servings, calories)
+ * 
+ * Why it's needed:
+ * - Provides consistent recipe display across all screens
+ * - Eliminates code duplication between different screens
+ * - Centralized UI logic for recipe cards
+ * - Ensures consistent user experience
+ * - Easy to maintain and modify card appearance
+ * 
+ * Used by:
+ * - home_screen.dart (for search results)
+ * - saved_recipes_screen.dart (for saved recipes)
+ * - Any screen that needs to display recipe lists
+ * 
+ * Features:
+ * - Animated card interactions (scale on hover/tap)
+ * - Cached network images with loading states
+ * - Save/unsave functionality with heart icon
+ * - Nutrition and timing information display
+ * - Staggered animations for list appearance
+ * - Responsive design for different screen sizes
+ */
+
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
@@ -6,9 +41,9 @@ import '../models/recipe.dart';
 import '../screens/recipe_detail_screen.dart';
 
 class RecipeCard extends StatefulWidget {
-  final Recipe recipe;
-  final VoidCallback? onSaveToggle;
-  final int index;
+  final Recipe recipe; // Recipe data to display
+  final VoidCallback? onSaveToggle; // Callback when save button is tapped
+  final int index; // Index in list (for staggered animations)
 
   const RecipeCard({
     super.key,
@@ -23,21 +58,27 @@ class RecipeCard extends StatefulWidget {
 
 class _RecipeCardState extends State<RecipeCard>
     with SingleTickerProviderStateMixin {
+  // Animation controllers for smooth card interactions
   late AnimationController _animationController;
-  late Animation<double> _scaleAnimation;
-  late Animation<double> _fadeAnimation;
-  bool _isHovered = false;
+  late Animation<double> _scaleAnimation; // Scale animation for tap feedback
+  // ignore: unused_field
+  late Animation<double> _fadeAnimation; // Fade animation for appearance
+  // ignore: unused_field, prefer_final_fields
+  bool _isHovered = false; // Track hover state for web/desktop
 
   @override
   void initState() {
     super.initState();
+    // Initialize animation controller with 300ms duration
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
+    // Create scale animation (grows slightly when tapped)
     _scaleAnimation = Tween<double>(begin: 1.0, end: 1.05).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
+    // Create fade animation (appears smoothly)
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
@@ -45,7 +86,7 @@ class _RecipeCardState extends State<RecipeCard>
 
   @override
   void dispose() {
-    _animationController.dispose();
+    _animationController.dispose(); // Clean up animation controller
     super.dispose();
   }
 

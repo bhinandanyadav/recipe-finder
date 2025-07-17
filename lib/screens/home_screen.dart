@@ -1,3 +1,39 @@
+/*
+ * 📱 HOME SCREEN - MAIN RECIPE SEARCH INTERFACE
+ * 
+ * Purpose: Main screen where users search for recipes and view results
+ * Location: lib/screens/home_screen.dart
+ * 
+ * What this file does:
+ * - Provides recipe search functionality (by ingredients or text query)
+ * - Displays search results in a beautiful grid layout
+ * - Handles ingredient management (add, remove, search)
+ * - Shows demo recipes when no search is performed
+ * - Manages loading states and error handling
+ * - Provides save/unsave functionality for recipes
+ * 
+ * Why it's needed:
+ * - Main entry point for users to discover recipes
+ * - Implements core app functionality (recipe search)
+ * - Provides intuitive user interface for recipe discovery
+ * - Integrates with recipe provider for state management
+ * - Handles user interactions and navigation
+ * 
+ * Used by:
+ * - main.dart (as first tab in bottom navigation)
+ * - Accessed when user taps "Search" tab
+ * 
+ * Key Features:
+ * - Dual search modes: ingredients and text query
+ * - Animated ingredient chips with removal capability
+ * - Staggered grid animations for recipe cards
+ * - Pull-to-refresh functionality
+ * - Loading states with shimmer effects
+ * - Error handling with retry options
+ * - Demo recipes showcase
+ * - Save/unsave recipes with visual feedback
+ */
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
@@ -14,16 +50,20 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
+  // Text controllers for search inputs
   final TextEditingController _searchController = TextEditingController();
   final TextEditingController _ingredientController = TextEditingController();
-  final List<String> _ingredients = [];
+  final List<String> _ingredients = []; // List of added ingredients
+
+  // Animation controllers for smooth UI transitions
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
-  bool _showSearchBar = false;
+  bool _showSearchBar = false; // Toggle between search modes
 
   @override
   void initState() {
     super.initState();
+    // Initialize fade animation for smooth screen appearance
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 500),
       vsync: this,
@@ -31,17 +71,19 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
-    _animationController.forward();
+    _animationController.forward(); // Start animation
   }
 
   @override
   void dispose() {
+    // Clean up controllers to prevent memory leaks
     _searchController.dispose();
     _ingredientController.dispose();
     _animationController.dispose();
     super.dispose();
   }
 
+  // Add an ingredient to the search list
   void _addIngredient() {
     final ingredient = _ingredientController.text.trim();
     if (ingredient.isNotEmpty &&
